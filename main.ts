@@ -1,6 +1,3 @@
-/**
- * 1700 on the top and 1300 on the bottom
- */
 function Left () {
     pins.servoSetPulse(AnalogPin.P8, 1300)
     control.waitMicros(20000)
@@ -12,23 +9,33 @@ function Left () {
     pins.servoSetPulse(AnalogPin.P13, 0)
     control.waitMicros(20000)
 }
-input.onButtonPressed(Button.A, function () {
-    Left()
-})
+function stop () {
+    pins.servoSetPulse(AnalogPin.P8, 0)
+    control.waitMicros(20000)
+    pins.servoSetPulse(AnalogPin.P13, 0)
+    control.waitMicros(20000)
+}
 function backward () {
     pins.servoSetPulse(AnalogPin.P8, 1700)
     control.waitMicros(20000)
     pins.servoSetPulse(AnalogPin.P13, 1300)
     control.waitMicros(20000)
 }
-input.onButtonPressed(Button.AB, function () {
-    pins.servoSetPulse(AnalogPin.P8, 0)
-    control.waitMicros(20000)
-    pins.servoSetPulse(AnalogPin.P13, 0)
-    control.waitMicros(20000)
-})
-input.onButtonPressed(Button.B, function () {
-    Right()
+/**
+ * 1700 on the top and 1300 on the bottom
+ */
+radio.onReceivedString(function (receivedString) {
+    if ("left" == receivedString) {
+        Left()
+    } else if ("right" == receivedString) {
+        Right()
+    } else if ("forward" == receivedString) {
+        forward()
+    } else if ("back" == receivedString) {
+        backward()
+    } else if ("stop" == receivedString) {
+        stop()
+    }
 })
 /**
  * Stop = 0
@@ -57,6 +64,7 @@ function Right () {
 let distance2 = 0
 let distance = 0
 basic.showIcon(IconNames.Skull)
+radio.setGroup(123)
 basic.forever(function () {
     pins.digitalWritePin(DigitalPin.P0, 0)
     control.waitMicros(2)
@@ -67,6 +75,11 @@ basic.forever(function () {
     if (distance < 700) {
         distance2 = distance
     }
-    basic.showNumber(distance2)
-    basic.pause(100)
+    if (distance2 < 11) {
+        backward()
+        basic.pause(500)
+        stop()
+        basic.pause(500)
+        Left()
+    }
 })
